@@ -79,7 +79,7 @@ public class RecipeService {
      * @param ingredients 사용자가 선택한 냉장고 재료
      * @return 추천 레시피 목록
      */
-    public List<Map<String, Object>> recommendRecipes(
+    public List<Map<String, Object>> recommandRecipes(
             List<String> ingredients) {
 
         /*

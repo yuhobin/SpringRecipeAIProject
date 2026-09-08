@@ -6,7 +6,7 @@ server:
 spring:
   # 데이터베이스 설정 (다중 DB 바인딩용 커스텀 프로퍼티)
   datasource:
-      url: jdbc:postgresql://localhost:5432/recipe
+      url: ${POST_URL}
       username: postgres
       password: "1234"
       driver-class-name: org.postgresql.Driver 
