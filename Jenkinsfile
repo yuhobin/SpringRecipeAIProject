@@ -6,23 +6,25 @@ pipeline {
 	}
 	stages {
 		/*
-			git push = commit (main)
-				|
-			web hook / poll
-				|
-			Jenkins (local) = EC2
-				|
-			  build
-				|
-			docker build
-			docker push
-				|
-			docker pull
-			docker run
+		    git push = commit (main) 
+		       |
+		    web hook / poll
+		       |
+		     Jenkins (local) = EC2
+		       |
+		     build 
+		       |
+		     docker build 
+		     docker push 
+		        |
+		     docker pull 
+		     docker run
+		     
+		     -name: = stage 
+		      run: 명령어 => steps
 		*/
 		/*
-			Repository : 소스파일 => Git URL
-			
+		    Repository : 소스파일 => Git URL
 		*/
 		stage('Check Out') {
 			steps {
@@ -42,92 +44,97 @@ pipeline {
 						credentialsId: 'gen-key',
 						variable: 'GEN_KEY'
 					)
-				]) {
+				]){
 					sh '''
-						echo "SPRING_PROFILES_ACTICE=prod > .env
-						echo "POST_URL=${POST_URL}" >> .env
-						echo "GEN_KEY=${GEN_KEY}" >> .env
-						
-						chmod 600 .env
-						'''
+				        echo "SPRING_PROFILES_ACTIVE=prod" > .env
+			            echo "POST_URL=${POST_URL}" >> .env
+			            echo "GEN_KEY=${GEN_KEY}" >> .env
+			            
+			            chmod 600 .env
+					   '''
 				}
 			}
 		}
-		// gradlew build => permission 처리
+		// gradlew build => permission  처리 
 		stage('Gradlew Permission'){
 			steps {
 				sh '''
-					chmod +x gradlew
-					'''
+				    chmod +x gradlew
+				   '''
 			}
 		}
 		
-		// gradle build
-		stage('Gradlew build') {
+		// gradlew build
+		stage('Gradlew Build'){
 			steps {
 				sh '''
-					./gradlew clean build -x test
-					'''
+				    ./gradlew clean build -x test
+				   '''
 			}
 		}
-		// Dokcer Build
-		stage('Docker build') {
+		// Docker Build 
+		stage('Docker Build'){
 			steps {
 				sh '''
-					docker build -t yuhobin/ai-app:latest .
-					'''
+				     docker build -t yuhobin/ai-app:latest .
+				   '''
 			}
 		}
 		// DockerHub Login
-		stage('Docker Login') {
+		stage('DockerHub Login'){
 			steps {
 				withCredentials([usernamePassword(
-					credentialsId:'dockerhub_info',
-					usernameVariable:'DH_USER',
-					passwordVariable:'DH_PASS'
-				)]) {
+					credentialsId: 'dockerhub_info',
+					usernameVariable: 'DH_USER',
+					passwordVariable: 'DH_PASS'
+				)]){
 					sh '''
-						echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin
-						'''
+					    echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin
+					   '''
 				}
 			}
 		}
 		
-		stage('Docker Push') {
+		stage('Docker Push'){
 			steps {
 				sh '''
-					docker push yuhobin/ai-app:latest
-					'''
-			}
-		}
-		stage('Container Stop') {
-			steps {
-				sh '''
-					docker stop ai-app || true
-					'''
-			}
-		}
-		stage('Container Remove') {
-			steps {
-				sh '''
-					docker rm ai-app || true
-					'''
+				    docker push yuhobin/ai-app:latest
+				   '''
 			}
 		}
 		
-		stage('DockerHub Pull') {
+		stage('Container Stop'){
 			steps {
 				sh '''
-					docker pull yuhobin/ai-app:latest
-					'''
+				    docker stop ai-app || true
+				   '''
 			}
 		}
-		stage('Docker Run') {
+		
+		stage('Container Remove'){
 			steps {
 				sh '''
-					docker run -d --name ai-app -p 9090:9090 --env-file .env yuhobin/ai-app:latest
-					'''
+				    docker rm ai-app || true
+				   '''
 			}
 		}
+		
+		stage('DockerHub Pull'){
+			steps {
+				sh '''
+				    docker pull yuhobin/ai-app:latest
+				   '''
+			}
+		}
+		
+		stage('Docker Run'){
+			steps {
+				sh '''
+				     docker run -d --name ai-app -p 9090:9090 --env-file .env yuhobin/ai-app:latest
+				   '''
+			}
+		}
+		
+		
 	}
 }
