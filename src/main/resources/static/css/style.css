@@ -1,0 +1,613 @@
+@charset "UTF-8";
+/* 모든 요소의 box-sizing 설정 */
+* {
+	box-sizing: border-box;
+}
+
+/* 전체 페이지 기본 스타일 */
+body {
+	margin: 0;
+	font-family: "Noto Sans KR", "Apple SD Gothic Neo", Arial, sans-serif;
+	background: #f7f8fa;
+	color: #222;
+}
+
+/* =========================
+           HEADER
+        ========================= */
+
+/* 상단 헤더 */
+.header {
+	height: 72px;
+	background: #fff;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 32px;
+	border-bottom: 1px solid #eee;
+}
+
+/* 로고 영역 */
+.logo-area {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+/* 로고 아이콘 */
+.logo-icon {
+	font-size: 30px;
+}
+
+/* 로고 */
+.logo {
+	font-size: 25px;
+	font-weight: 900;
+	color: #ff641e;
+}
+
+/* 로고 설명 */
+.logo-sub {
+	margin-left: 12px;
+	color: #777;
+	font-size: 14px;
+}
+
+/* 헤더 메뉴 */
+.header-menu {
+	display: flex;
+	gap: 28px;
+	color: #555;
+	font-size: 14px;
+}
+
+/* =========================
+           MAIN
+        ========================= */
+
+/* 전체 화면 컨테이너 */
+.container {
+	width: 1500px;
+	max-width: calc(100% - 40px);
+	margin: 24px auto;
+	display: grid;
+	grid-template-columns: 590px 1fr;
+	gap: 18px;
+}
+
+/* 카드 공통 */
+.card {
+	background: #fff;
+	border-radius: 16px;
+	border: 1px solid #e8e8e8;
+	padding: 24px;
+	box-shadow: 0 3px 12px rgba(0, 0, 0, .04);
+}
+
+/* =========================
+           TITLE
+        ========================= */
+
+/* 제목 */
+.title {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	font-size: 20px;
+	font-weight: 800;
+	margin-bottom: 18px;
+}
+
+/* 선택 개수 */
+.count {
+	background: #fff0e8;
+	color: #ff641e;
+	border-radius: 20px;
+	padding: 6px 12px;
+	font-size: 13px;
+}
+
+/* =========================
+           SEARCH
+        ========================= */
+
+/* 검색 영역 */
+.search {
+	position: relative;
+	margin-bottom: 14px;
+}
+
+/* 검색 입력창 */
+.search input {
+	width: 100%;
+	height: 48px;
+	border: 1px solid #ddd;
+	border-radius: 10px;
+	padding: 0 45px 0 15px;
+	font-size: 14px;
+	outline: none;
+}
+
+/* 검색창 포커스 */
+.search input:focus {
+	border-color: #ff641e;
+}
+
+/* 검색 아이콘 */
+.search-icon {
+	position: absolute;
+	right: 15px;
+	top: 12px;
+	font-size: 20px;
+}
+
+/* =========================
+           CATEGORY
+        ========================= */
+
+/* 카테고리 영역 */
+.categories {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 16px;
+	flex-wrap: wrap;
+}
+
+/* 카테고리 버튼 */
+.category {
+	padding: 8px 15px;
+	border: 1px solid #ddd;
+	background: white;
+	border-radius: 20px;
+	font-size: 13px;
+	cursor: pointer;
+}
+
+/* 선택된 카테고리 */
+.category.active {
+	background: #ff641e;
+	color: white;
+	border-color: #ff641e;
+}
+
+/* =========================
+           SELECTED
+        ========================= */
+
+/* 선택 재료 박스 */
+.selected-box {
+	border: 1px solid #e3e3e3;
+	border-radius: 10px;
+	padding: 14px;
+	margin-bottom: 18px;
+}
+
+/* 선택 재료 제목 */
+.selected-header {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 12px;
+	font-weight: 700;
+	font-size: 14px;
+}
+
+/* 전체 삭제 버튼 */
+.delete-btn {
+	background: white;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	padding: 6px 10px;
+	font-size: 12px;
+	cursor: pointer;
+}
+
+/* 선택 재료 목록 */
+.selected-list {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+/* 선택 재료 */
+.selected-item {
+	background: #fafafa;
+	border: 1px solid #ddd;
+	padding: 7px 11px;
+	border-radius: 20px;
+	font-size: 13px;
+	cursor: pointer;
+}
+
+/* =========================
+           INGREDIENT GRID
+        ========================= */
+
+/* 재료 그리드 */
+.ingredient-grid {
+	display: grid;
+	grid-template-columns: repeat(6, 1fr);
+	gap: 10px;
+}
+
+/* 재료 */
+.ingredient {
+	height: 90px;
+	border: 1px solid #e2e2e2;
+	border-radius: 10px;
+	background: white;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	position: relative;
+	cursor: pointer;
+	transition: .2s;
+}
+
+/* 재료 마우스 오버 */
+.ingredient:hover {
+	transform: translateY(-2px);
+	border-color: #ff641e;
+}
+
+/* 선택된 재료 */
+.ingredient.selected {
+	border: 2px solid #ff641e;
+	background: #fffaf7;
+}
+
+/* 재료 아이콘 */
+.ingredient-icon {
+	font-size: 34px;
+	margin-bottom: 5px;
+}
+
+/* 재료 이름 */
+.ingredient-name {
+	font-size: 13px;
+	font-weight: 600;
+}
+
+/* 선택 체크 */
+.check {
+	position: absolute;
+	right: 5px;
+	top: 5px;
+	width: 21px;
+	height: 21px;
+	border-radius: 50%;
+	background: #ff641e;
+	color: white;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 12px;
+}
+
+/* =========================
+           BUTTON
+        ========================= */
+
+/* 추천 버튼 */
+.recommend-btn {
+	width: 100%;
+	height: 54px;
+	margin-top: 20px;
+	border: none;
+	border-radius: 10px;
+	background: linear-gradient(90deg, #ff641e, #ff7100);
+	color: white;
+	font-size: 17px;
+	font-weight: 800;
+	cursor: pointer;
+}
+
+/* 추천 버튼 비활성화 */
+.recommend-btn:disabled {
+	opacity: .6;
+	cursor: wait;
+}
+
+/* =========================
+           RESULT
+        ========================= */
+
+/* 결과 제목 */
+.result-title {
+	font-size: 20px;
+	font-weight: 800;
+	margin-bottom: 18px;
+}
+
+/* 로딩 */
+.loading {
+	padding: 30px;
+	text-align: center;
+	color: #777;
+}
+
+/* 빈 결과 */
+.empty {
+	padding: 50px 20px;
+	text-align: center;
+	color: #999;
+	border: 1px dashed #ddd;
+	border-radius: 12px;
+}
+
+/* =========================
+           RECIPE CARD
+        ========================= */
+
+/* 레시피 결과 */
+.recipe-result {
+	border: 1px solid #e5e5e5;
+	border-radius: 14px;
+	padding: 20px;
+	margin-bottom: 18px;
+}
+
+/* 레시피 헤더 */
+.recipe-header {
+	display: grid;
+	grid-template-columns: 1fr 280px;
+	gap: 20px;
+	margin-bottom: 18px;
+}
+
+/* 레시피 이름 */
+.recipe-name {
+	font-size: 27px;
+	font-weight: 900;
+	margin-top: 20px;
+	margin-bottom: 18px;
+}
+
+/* 레시피 아이콘 */
+.recipe-icon {
+	font-size: 38px;
+}
+
+/* 레시피 이미지 */
+.recipe-image {
+	width: 100%;
+	height: 190px;
+	object-fit: cover;
+	border-radius: 14px;
+}
+
+/* =========================
+           SCORE
+        ========================= */
+
+/* 점수 영역 */
+.scores {
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+/* 점수 */
+.score {
+	padding: 11px 15px;
+	border-radius: 10px;
+	font-size: 13px;
+	font-weight: 700;
+}
+
+/* 점수 숫자 */
+.score strong {
+	font-size: 19px;
+	margin-left: 7px;
+}
+
+/* 유사도 */
+.score.orange {
+	background: #fff4ed;
+	border: 1px solid #ffd5c1;
+	color: #e95719;
+}
+
+/* 재료 충족률 */
+.score.green {
+	background: #effaf3;
+	border: 1px solid #c9ead4;
+	color: #159447;
+}
+
+/* =========================
+           INGREDIENT STATUS
+        ========================= */
+
+/* 재료 상태 */
+.status {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 14px;
+	margin: 15px 0;
+}
+
+/* 상태 박스 */
+.status-box {
+	min-height: 100px;
+	padding: 16px;
+	border-radius: 12px;
+}
+
+/* 보유 재료 */
+.have {
+	background: #f0fbf4;
+	border: 1px solid #c8ead3;
+}
+
+/* 부족 재료 */
+.missing {
+	background: #fff5f5;
+	border: 1px solid #ffd0d0;
+}
+
+/* 상태 제목 */
+.status-title {
+	font-weight: 800;
+	margin-bottom: 12px;
+}
+
+/* 보유 제목 */
+.have .status-title {
+	color: #159447;
+}
+
+/* 부족 제목 */
+.missing .status-title {
+	color: #df3030;
+}
+
+/* 태그 영역 */
+.tags {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+/* 태그 */
+.tag {
+	background: white;
+	border: 1px solid #ddd;
+	padding: 7px 13px;
+	border-radius: 20px;
+	font-size: 13px;
+}
+
+/* =========================
+           FINAL RECIPE
+        ========================= */
+
+/* 최종 레시피 */
+.final-recipe {
+	border: 1px solid #e1e1e1;
+	border-radius: 12px;
+	padding: 20px;
+}
+
+/* 최종 제목 */
+.final-title {
+	font-size: 19px;
+	font-weight: 800;
+	margin-bottom: 18px;
+}
+
+/* 레시피 내용 */
+.recipe-content {
+	display: grid;
+	grid-template-columns: 250px 1fr;
+	gap: 25px;
+}
+
+/* 재료/조리 제목 */
+.ingredients h3, .steps h3 {
+	font-size: 15px;
+	margin-bottom: 14px;
+}
+
+/* 재료 목록 */
+.ingredients ul {
+	padding-left: 20px;
+}
+
+/* 재료 */
+.ingredients li {
+	margin-bottom: 10px;
+	font-size: 14px;
+}
+
+/* 조리 방법 */
+.steps {
+	border-left: 1px solid #eee;
+	padding-left: 25px;
+}
+
+/* 조리 단계 */
+.step {
+	display: flex;
+	gap: 10px;
+	margin-bottom: 14px;
+	font-size: 14px;
+	line-height: 1.6;
+}
+
+/* 단계 번호 */
+.step-number {
+	width: 23px;
+	height: 23px;
+	flex-shrink: 0;
+	background: #13a04b;
+	color: white;
+	border-radius: 50%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 12px;
+	font-weight: bold;
+}
+
+/* =========================
+           TIP
+        ========================= */
+
+/* AI TIP */
+.tip {
+	margin-top: 20px;
+	padding: 15px;
+	background: #fffaf0;
+	border: 1px solid #ffe4a4;
+	border-radius: 10px;
+	font-size: 13px;
+	line-height: 1.6;
+}
+
+/* TIP 제목 */
+.tip-title {
+	color: #8a6200;
+	font-weight: 800;
+	margin-bottom: 7px;
+}
+
+/* =========================
+           RESPONSIVE
+        ========================= */
+
+/* 태블릿 */
+@media ( max-width :1100px) {
+	.container {
+		width: 95%;
+		grid-template-columns: 1fr;
+	}
+	.recipe-header {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* 모바일 */
+@media ( max-width :700px) {
+	.container {
+		max-width: calc(100% - 20px);
+	}
+	.ingredient-grid {
+		grid-template-columns: repeat(3, 1fr);
+	}
+	.status {
+		grid-template-columns: 1fr;
+	}
+	.recipe-content {
+		grid-template-columns: 1fr;
+	}
+	.steps {
+		border-left: none;
+		border-top: 1px solid #eee;
+		padding-left: 0;
+		padding-top: 20px;
+	}
+	.header-menu {
+		display: none;
+	}
+}
