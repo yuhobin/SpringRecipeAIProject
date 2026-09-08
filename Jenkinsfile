@@ -44,12 +44,11 @@ pipeline {
 					)
 				]) {
 					sh '''
-						cat > .env << EOF
-						SPRING_PROFILES_ACTIVE=prod
-						POST_URL=${POST_URL}
-						GEN_KEY=${GEN_KEY}
-						EOF
-							chmod 600 .env
+						echo "SPRING_PROFILES_ACTICE=prod > .env
+						echo "POST_URL=${POST_URL}" >> .env
+						echo "GEN_KEY=${GEN_KEY}" >> .env
+						
+						chmod 600 .env
 						'''
 				}
 			}
