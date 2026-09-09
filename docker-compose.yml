@@ -1,0 +1,11 @@
+version: "3.8"
+services:
+  app:
+   build: .
+   image: yuhobin/pinia-app
+   container_name: pinia-app
+   ports:
+     - "9090:9090"
+   env_file:
+    - .env
+   restart: always
