@@ -25,8 +25,8 @@ pipeline {
 	*/
 	agent any
 	enviroment {
-		APP_DIR = "~/app",
-		JAR_NAME = "SpringRecipeAIProject-0.0.1-SNAPSHOT.jar",
+		APP_DIR = "~/app"
+		JAR_NAME = "SpringRecipeAIProject-0.0.1-SNAPSHOT.jar"
 		DOCKER_IMAGE = "yuhobin/ai-app:latest"
 	}
 	// 우분투 (AWS) 명령어 수행
