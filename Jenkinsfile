@@ -105,7 +105,7 @@ pipeline {
 					)
 				]){
 					sh '''
-						echo "$DH_PASS" docker login -u "$DH_USER" --password-stdin
+						echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin
 						'''
 				}
 			}
@@ -156,20 +156,19 @@ pipeline {
 			}
 		}
 	}
-	
+	post {
+		success {
+			echo '======================='
+			echo 'Docker Compose 배포 성공'
+			echo '======================='
+		}
+		failure {
+			echo '======================='
+			echo 'Docker Compose 배포 실패'
+			echo '======================='
+			sh '''
+				docker compose ps || true
+				'''
+		}
+	}
 } // pipeline 종료
-post {
-	success {
-		echo '======================='
-		echo 'Docker Compose 배포 성공'
-		echo '======================='
-	}
-	failure {
-		echo '======================='
-		echo 'Docker Compose 배포 실패'
-		echo '======================='
-		sh '''
-			docker compose ps || true
-			'''
-	}
-}
