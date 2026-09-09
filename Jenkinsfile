@@ -24,7 +24,7 @@ pipeline {
 		Docker compose up -d
 	*/
 	agent any
-	enviroment {
+	environment {
 		APP_DIR = "~/app"
 		JAR_NAME = "SpringRecipeAIProject-0.0.1-SNAPSHOT.jar"
 		DOCKER_IMAGE = "yuhobin/ai-app:latest"
