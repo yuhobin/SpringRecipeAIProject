@@ -1,100 +1,54 @@
 pipeline {
-	/*
-		소기업 : Git Actions
-		중소기업 : Jenkins
-		대기업 : 자체처리
-			= docker, docker-compose
-		전체 동작 : Jenkins = 관리자
-		Git Push
-			|------ workflows(Git)
-			|------ WebHook(트리거)
-		Jenkins
-			|------Permission 방지
-					chmod +x geadlew
-		Gradle Build
-			|------ ./gradlew clean build -x test test제외 jar
-		Docker Build
-			|------ image만든다 docker build -t image명
-		Docker Hub Push docker push image 명
-			|------ 서버 종료
-		Docker compose down
-			|
-		Docker compose Pull
-			|
-		Docker compose up -d
-	*/
 	agent any
 	environment {
-		APP_DIR = "~/app"
 		JAR_NAME = "SpringRecipeAIProject-0.0.1-SNAPSHOT.jar"
 		DOCKER_IMAGE = "yuhobin/ai-app:latest"
+		SERVER_USER = "ubuntu"
+		SERVER_IP = "43.203.176.193"
+		APP_DIR = "/home/ubuntu/app"
 	}
-	// 우분투 (AWS) 명령어 수행
-	/*
-		scm
-			= git-url
-			= Jenkinsfile 인식
-	*/
+
 	stages {
-		// 1. Git Checkout : Repository 확인
-		stage("Repository Checkout") {
+		stage("Repository Checkout"){
 			steps {
 				echo 'Git Checkout'
 				checkout scm
 			}
 		}
-		// yml 인식 => ${POST_URL}, api-key : ${GEN_KEY}
-		stage ("Create .env") {
-			steps {
-				withCredentials([
-					string(
-						credentialsId: 'post-url',
-						variable: 'POST_URL'
-					),
-					string(
-						credentialsId: 'gen-key',
-						variable: 'GEN_KEY'
-					)
-				]){
-					sh '''
-						echo "SPRING_PROFILES_ACTIVE=prod" > .env
-						echo "POST_URL=${POST_URL}" >> .env
-						echo "GEN_KEY=${GEN_KEY}" >> .env
-						
-						chmod 600 .env
-						'''
-				}
-			}
-		}
 		
-		// 3. gradlew 실행 권한 
-		stage("Gradle Permission") {
+		stage("JDK21 확인"){
 			steps {
 				sh '''
-					chmod +x gradlew 
-					'''
+				    java -version
+				    ./gradlew --version
+				   '''
 			}
 		}
 		
-		// 4. gradlew build  => 배포 파일 만들기 (jar파일 만들기)
+		stage("Gradle Permission") {
+			steps {
+			   sh '''
+			        chmod +x gradlew
+			      '''	
+			}
+		}
+		
 		stage("Gradlew Build") {
 			steps {
 				sh '''
-					./gradlew clean build -x test
-					'''
+				     ./gradlew clean build -x test
+				   '''
 			}
 		}
 		
-		// 5. Docker Image => 시간 측정 
 		stage("Docker Build") {
 			steps {
 				sh '''
-					docker build -t ${DOCKER_IMAGE} .
-					'''
+				    docker build -t ${DOCKER_IMAGE} .
+				   '''
 			}
 		}
 		
-		// 6. Docker Hub Login
 		stage("DockerHub Login") {
 			steps {
 				withCredentials([
@@ -105,57 +59,111 @@ pipeline {
 					)
 				]){
 					sh '''
-						echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin
-						'''
+					    echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin
+					   '''
 				}
 			}
 		}
 		
-		// 7. DockerHub Push
 		stage("DockerHub Push") {
 			steps {
 				sh '''
-					docker push ${DOCKER_IMAGE}
-					'''
+				    docker push ${DOCKER_IMAGE}
+				   '''
 			}
 		}
 		
-		// 8. 기존의 Container 종류 = ai-app
-		stage("Docker Compose DOWN") {
+        stage("SSH Key Setting"){
+			steps {
+				withCredentials([
+					sshUserPrivateKey(
+						credentialsId: 'SERVER_SSH_KEY',
+						keyFileVariable: 'SSH_KEY',
+						usernameVariable: 'SSH_USER'
+					)
+				]){
+					sh '''
+					    mkdir -p ~/.ssh
+					    cp "$SSH_KEY" ~/.ssh/id_ed25519
+					    chmod 600 ~/.ssh/id_ed25519
+					   '''
+				}
+			}
+		}
+		
+		stage("Known Hosts"){
 			steps {
 				sh '''
-					docker compose down || true 
-					'''
+				    mkdir -p ~/.ssh
+				    ssh-keyscan -H ${SERVER_IP} >> ~/.ssh/known_hosts
+				    chmod 644 ~/.ssh/known_hosts
+				   '''
 			}
 		}
 		
-		// 9. 최신 이미지를 읽어 온다 
-		stage("Docker Compose Pull") {
+		stage("Create .env"){
 			steps {
-				sh '''
-					docker compose pull
-					'''
+				withCredentials([
+					string(credentialsId: 'post-url', variable: 'POST_URL'),
+					string(credentialsId: 'gen-key', variable: 'GEN_KEY'),
+					sshUserPrivateKey(credentialsId: 'SERVER_SSH_KEY', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')
+				]){
+					sh '''
+					   ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_IP} <<EOF 
+					   mkdir -p ${APP_DIR}
+					   cd ${APP_DIR}
+					   
+					   rm -f .env
+					   echo "SPRING_PROFILES_ACTIVE=prod" > .env
+					   echo "POST_URL=${POST_URL}" >> .env
+					   echo "GEN_KEY=${GEN_KEY}" >> .env
+					   
+					   chmod 600 .env
+EOF
+					   '''
+				}
 			}
 		}
-		
-		// 10. docker compose 실행
-		stage("Docker Compose Up") {
-			steps{
-				sh '''
-					docker compose up -d
-					'''
-			}
-		}
-		
-		// 11. Container Check
-		stage("Container Check") {
+
+        stage("Copy Docker-Compose"){
 			steps {
-				sh '''
-					docker compose ps
-					'''
+				withCredentials([
+					sshUserPrivateKey(
+						credentialsId: 'SERVER_SSH_KEY',
+						keyFileVariable: 'SSH_KEY',
+						usernameVariable: 'SSH_USER'
+					)
+				]){
+					sh '''
+					    ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_IP} "mkdir -p ${APP_DIR}"
+					    scp -i "$SSH_KEY" -o StrictHostKeyChecking=no docker-compose.yml ${SERVER_USER}@${SERVER_IP}:${APP_DIR}/docker-compose.yml
+					   '''
+				}
 			}
 		}
-	}
+		
+		stage("Deploy"){
+			steps {
+				withCredentials([
+					sshUserPrivateKey(
+						credentialsId: 'SERVER_SSH_KEY',
+						keyFileVariable: 'SSH_KEY',
+						usernameVariable: 'SSH_USER'
+					)
+				]){
+					sh '''
+					    ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_IP} <<EOF
+					    cd ${APP_DIR}
+					    docker compose down || true
+					    docker compose pull
+					    docker compose up -d
+EOF
+					   '''
+				}
+			}
+		}
+	} // stages 종료
+	
 	post {
 		success {
 			echo '======================='
@@ -166,9 +174,17 @@ pipeline {
 			echo '======================='
 			echo 'Docker Compose 배포 실패'
 			echo '======================='
-			sh '''
-				docker compose ps || true
-				'''
+			withCredentials([
+				sshUserPrivateKey(
+					credentialsId: 'SERVER_SSH_KEY',
+					keyFileVariable: 'SSH_KEY',
+					usernameVariable: 'SSH_USER'
+				)
+			]){
+				sh '''
+				    ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_IP} "cd ${APP_DIR} && docker compose ps" || true
+				   '''
+			}
 		}
 	}
 } // pipeline 종료
