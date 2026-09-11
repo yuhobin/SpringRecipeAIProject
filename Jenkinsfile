@@ -136,6 +136,7 @@ pipeline {
 			}
 		}
 		
+		
 		stage("Deploy"){
 			steps {
 				withCredentials([
@@ -146,16 +147,17 @@ pipeline {
 					)
 				]){
 					sh '''
-					    ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_IP} <<EOF
-					    cd ${APP_DIR}
-					    sudo docker compose down || true
-					    sudo docker compose pull
-					    sudo docker compose up -d
-						EOF
-					   '''
+						   ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_IP} "
+						       cd ${APP_DIR}
+						       sudo docker compose down || true
+						       sudo docker compose pull
+						       sudo docker compose up -d
+						   "
+						'''
 				}
 			}
 		}
+		
 	}
 	
 	post {
