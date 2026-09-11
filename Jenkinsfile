@@ -16,20 +16,14 @@ pipeline {
 			}
 		}
 		
-		stage("JDK21 확인"){
+		stage("JDK & Gradle Check") {
 			steps {
 				sh '''
 				    java -version
+				    # gradlew 실행 권한을 먼저 부여한 후 버전을 확인합니다.
+				    chmod +x gradlew
 				    ./gradlew --version
 				   '''
-			}
-		}
-		
-		stage("Gradle Permission") {
-			steps {
-			   sh '''
-			        chmod +x gradlew
-			      '''	
 			}
 		}
 		
@@ -162,7 +156,7 @@ EOF
 				}
 			}
 		}
-	} // stages 종료
+	}
 	
 	post {
 		success {
@@ -187,4 +181,4 @@ EOF
 			}
 		}
 	}
-} // pipeline 종료
+}
