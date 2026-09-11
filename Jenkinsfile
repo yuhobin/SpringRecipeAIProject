@@ -1,45 +1,12 @@
 pipeline {
-	/*
-	    소기업 : Git Action
-	    중소기업 : Jenkins 
-	    대기업 : 자체 처리 
-	      = docker , docker-compose
-	    전체 동작 : Jenkins = 관리자 
-	    Git Push 
-	       |------ workflows(Git)
-	       |------ WebHook (트리거)
-	    Jenkins 
-	       |------ Permission 방지 
-	               cnmod +x gradlew : 실행 권한 
-	   Gradle Build
-	       |------ ./gradlew clean build -x test test제외 jar
-	    Docker Build 
-	       |------ image만든다 docker build -t image명 
-	    Docker Hub Push docker push image명 
-	       |------ 서버 종료
-	    Docker compose down
-	       |
-	    Docker compose Pull 
-	       |
-	    Docker compose up -d  
-	       
-	*/
 	agent any
-	// 변수 설정 
 	environment {
 		JAR_NAME = "SpringRecipeAIProject-0.0.1-SNAPSHOT.jar"
 		DOCKER_IMAGE = "yuhobin/ai-app:latest"
-		// AWS EC2
-		SERVER_USER="ubuntu"
-		SERVER_IP="43.203.176.193"
-		APP_DIR="/home/ubuntu/app"
+		SERVER_USER = "ubuntu"
+		SERVER_IP = "43.203.176.193"
+		APP_DIR = "/home/ubuntu/app"
 	}
-	// 우분투 (AWS) 명령어 수행 
-	/*
-	   scm 
-	     = git-url 
-	     = Jenkinsfile인식 
-	*/
 	stages {
 		// 1. Git Checkout : Repository확인 
 		stage("Repository Checkout"){
@@ -53,11 +20,9 @@ pipeline {
 			steps {
 				sh '''
 				    java -version
-				    
 				   '''
 			}
 		}
-		// yml 인식 => ${POST_URL} , api-key : ${GEN_KEY}
 		
 		// 3. gradlew 실행 권한 
 		stage("Gradle Permission") {
@@ -77,7 +42,7 @@ pipeline {
 			}
 		}
 		
-		// 5. Docker Image => 시간 측정 
+		// 5. Docker Image 생성
 		stage("Docker Build") {
 			steps {
 				sh '''
@@ -86,7 +51,7 @@ pipeline {
 			}
 		}
 		
-		// 6. Docker Hub Login
+		// 6. Docker Hub Login (파이프 | 추가)
 		stage("DockerHub Login") {
 			steps {
 				withCredentials([
@@ -97,12 +62,13 @@ pipeline {
 					)
 				]){
 					sh '''
-					    echo "$DH_PASS" docker login -u "$DH_USER" --password-stdin
+					    echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin
 					   '''
 				}
 			}
 		}
-		// 7. Dockerhub  Push
+		
+		// 7. Dockerhub Push
 		stage("DockerHub Push") {
 			steps {
 				sh '''
@@ -111,7 +77,7 @@ pipeline {
 			}
 		}
 		
-		// 8. SSH KEY 설정 SERVER_SSH_KEY
+		// 8. SSH KEY 설정
         stage("SSH Key Setting"){
 			steps {
 				withCredentials([
@@ -129,18 +95,19 @@ pipeline {
 				}
 			}
 		}
-		// 9. AWS 접근 
+		
+		// 9. AWS 접근 Known Hosts 등록
 		stage("Known Hosts"){
 			steps {
 				sh '''
 				    mkdir -p ~/.ssh
-				    ssh-keyscan -H 43.203.176.193 >> ~/.ssh/known_hosts
-				    
+				    ssh-keyscan -H ${SERVER_IP} >> ~/.ssh/known_hosts
 				    chmod 644 ~/.ssh/known_hosts
 				   '''
 			}
 		}
-		// 10. .env생성 
+		
+		// 10. .env 생성 (따옴표 충돌 해결 및 변수 처리 통일)
 		stage("Create .env"){
 			steps {
 				withCredentials([
@@ -159,20 +126,20 @@ pipeline {
 					)
 				]){
 					sh '''
-					   ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ubuntu@43.203.176.193 \
-					   "mkdir -p /home/ubuntu/app && \
-					   cd /home/ubuntu/app && \
+					   ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_IP} \
+					   "mkdir -p ${APP_DIR} && \
+					   cd ${APP_DIR} && \
 					   rm -f .env && \
-					   echo "SPRING_PROFILES_ACTIVE=prod" > .env && \
-					   echo "POST_URL=${POST_URL}" >> .env && \
-					   echo "GEN_KEY=${GEN_KEY}" >> .env && \
+					   echo 'SPRING_PROFILES_ACTIVE=prod' > .env && \
+					   echo 'POST_URL=${POST_URL}' >> .env && \
+					   echo 'GEN_KEY=${GEN_KEY}' >> .env && \
 					   chmod 600 .env"
 					   '''
 				}
 			}
 		}
 
-        // 8. docker-compose.yml 이동 
+        // 11. docker-compose.yml 이동 
         stage("Copy Docker-Compose"){
 			steps {
 				withCredentials([
@@ -183,14 +150,14 @@ pipeline {
 					)
 				]){
 					sh '''
-					    ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ubuntu@43.203.176.193 "mkdir -p /home/ubuntu/app"
-					    scp -i "$SSH_KEY" -o StrictHostKeyChecking=no docker-compose.yml ubuntu@43.203.176.193:/home/ubuntu/app/docker-compose.yml
+					    ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_IP} "mkdir -p ${APP_DIR}"
+					    scp -i "$SSH_KEY" -o StrictHostKeyChecking=no docker-compose.yml ${SERVER_USER}@${SERVER_IP}:${APP_DIR}/docker-compose.yml
 					   '''
-					   
 				}
 			}
 		}
 		
+		// 12. Deploy
 		stage("Deploy"){
 			steps {
 				withCredentials([
@@ -201,31 +168,31 @@ pipeline {
 					)
 				]){
 					sh '''
-					    ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ubuntu@43.203.176.193 \
-					    "cd /home/ubuntu/app && \
-					    docker-compose down && \
+					    ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_IP} \
+					    "cd ${APP_DIR} && \
+					    docker-compose down || true && \
 					    docker-compose pull && \
 					    docker-compose up -d"
 					   '''
 				}
 			}
 		}
-		
-	}
+	} // stages 블록 종료
 	
-} // pipeline 종료
-post {
-	success {
-		echo '======================='
-		echo 'Docket Compose 배포 성공!!'
-		echo '======================='
+	// post 블록을 pipeline 내부로 이동 및 오타 수정
+	post {
+		success {
+			echo '======================='
+			echo 'Docker Compose 배포 성공!!'
+			echo '======================='
+		}
+		failure {
+			echo '======================='
+			echo 'Docker Compose 배포 실패!!'
+			echo '======================='
+			sh '''
+			    docker compose ps || true
+			   '''
+		}
 	}
-	failure {
-		echo '======================='
-		echo 'Docket Compose 배포 실패!!'
-		echo '======================='
-		sh '''
-		    docker compose ps || true
-		   '''
-	}
-}
+} // pipeline 블록 종료
