@@ -113,7 +113,7 @@ pipeline {
 					   echo "GEN_KEY=${GEN_KEY}" >> .env
 					   
 					   chmod 600 .env
-EOF
+						EOF
 					   '''
 				}
 			}
@@ -148,10 +148,10 @@ EOF
 					sh '''
 					    ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_IP} <<EOF
 					    cd ${APP_DIR}
-					    docker compose down || true
-					    docker compose pull
-					    docker compose up -d
-EOF
+					    sudo docker compose down || true
+					    sudo docker compose pull
+					    sudo docker compose up -d
+						EOF
 					   '''
 				}
 			}
@@ -176,7 +176,7 @@ EOF
 				)
 			]){
 				sh '''
-				    ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_IP} "cd ${APP_DIR} && docker compose ps" || true
+				   ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_IP} "cd ${APP_DIR} && sudo docker compose ps" || true
 				   '''
 			}
 		}
